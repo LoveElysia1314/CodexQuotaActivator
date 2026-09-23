@@ -1,0 +1,77 @@
+# ==================================================================
+# CodexQuotaActivator — .gitignore
+# Runtime files contain machine-specific paths and diagnostic output.
+# ==================================================================
+
+# ---- Secrets / credentials (safety net) ----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+*.crt
+*.cer
+*.der
+id_rsa
+id_dsa
+*.secret
+*.token
+
+# ---- Runtime artifacts ----
+# config.json carries <codex_path> like C:\Users\<user>\... — never commit it.
+*.json
+# run-hidden.vbs embeds the absolute path to activate.ps1.
+*.vbs
+# All logs contain timestamps, working directories and Codex output.
+*.log
+logs/
+logs/**
+
+# ---- Windows system files ----
+Thumbs.db
+Desktop.ini
+ehthumbs.db
+~$*
+$RECYCLE.BIN/
+
+# ---- OS cruft ----
+.DS_Store
+._*
+desktop.ini
+
+# ---- Editor / IDE ----
+.vscode/
+.idea/
+*.code-workspace
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.history/
+.nyx_grade/
+
+# ---- Build / distribution output ----
+dist/
+build/
+out/
+*.zip
+*.7z
+*.rar
+*.tar.gz
+
+# ---- Temp / backup / merge artifacts ----
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
+*~
+.~
+*.old
+
+# ---- Package manager ----
+node_modules/
+.pnpm-store/
+.package-lock.json.tmp
