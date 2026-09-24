@@ -2,7 +2,7 @@
 
 简体中文 | [English](README.md)
 
-这是一个 Windows 计划任务项目，每隔六小时通过 Codex CLI 发送一条简短请求。每次运行使用 `codex exec --ephemeral`，CLI 不会为该请求保存会话记录文件。
+这是一个 Windows 计划任务项目，每隔六小时通过 Codex CLI 发送一条简短请求。每次运行使用 `codex exec --ephemeral`，指定 `gpt-6-luna` 和 `low` 思考强度；CLI 不会为该请求保存会话记录文件。
 
 计划任务会使用已登录的 Codex CLI 发起真实请求。**定时发送请求不保证开启、重置或延长额度窗口。**额度规则由 OpenAI 决定。
 
@@ -45,17 +45,24 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1 -Mode Instal
 
 默认从本地时间 05:30 开始，每六小时执行一次，即 **05:30、11:30、17:30、23:30**。Windows 中只注册一个任务。
 
-每次运行时，脚本把本地时间填入以下消息：
+每次运行时，脚本发送以下消息：
 
 ```text
-This conversation is only for testing Codex CLI network connectivity and the scheduled activation script execution path.
-Current time: {TIME}
-Please reply only with "Received."
+Ping. Reply PONG.
 ```
 
 计划任务在后台运行，不显示终端窗口，并使用电脑现有的网络配置。如果请求失败或超过 60 秒，脚本等待 15 秒后再尝试一次。运行结果和简短的 CLI 输出写入 `logs/activator.log`。
 
 Codex CLI 的 [`--ephemeral` 选项](https://learn.chatgpt.com/docs/developer-commands?surface=cli)使本次运行不保存会话记录文件。
+模型与思考强度仅对此命令生效，不修改全局 Codex 设置。缩短消息不会移除 CLI 请求自身的固定上下文，因此不能保证额度消耗按消息字数等比例下降。
+
+如需手动发送一次请求进行检查，而不运行计划任务，可执行：
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\test-activation.ps1
+```
+
+该脚本会发送一次真实请求，不会重试。
 
 ## 查看任务状态
 
@@ -87,6 +94,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1 -Mode Uninst
 | 文件 | 用途 |
 | --- | --- |
 | `activate.ps1` | 执行定时请求并写入日志。 |
+| `test-activation.ps1` | 手动发送一次请求进行检查。 |
 | `setup.ps1` | 安装或删除计划任务。 |
 | `install.cmd`、`uninstall.cmd` | Windows 安装和卸载入口。 |
 | `CHANGELOG.md` | 中英双语版本记录。 |

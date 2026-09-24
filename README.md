@@ -2,7 +2,7 @@
 
 [简体中文](README.zh-CN.md) | English
 
-A Windows scheduled task that sends a short Codex CLI request every six hours. Each run uses `codex exec --ephemeral`, so the CLI does not persist a session rollout file for that request.
+A Windows scheduled task that sends a short Codex CLI request every six hours. Each run uses `codex exec --ephemeral` with `gpt-6-luna` at `low` reasoning effort, so the CLI does not persist a session rollout file for that request.
 
 The task sends real requests through your signed-in Codex CLI. **A scheduled request does not guarantee that a usage limit window will start, reset, or extend.** OpenAI controls how usage limits work.
 
@@ -45,17 +45,24 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1 -Mode Instal
 
 The default schedule starts at 05:30 local time and repeats every six hours: **05:30, 11:30, 17:30, and 23:30**. It is registered as one Windows task.
 
-At each run, the script inserts the local timestamp into this prompt:
+At each run, the script sends this prompt:
 
 ```text
-This conversation is only for testing Codex CLI network connectivity and the scheduled activation script execution path.
-Current time: {TIME}
-Please reply only with "Received."
+Ping. Reply PONG.
 ```
 
 The task launches without a visible terminal window and uses the machine's existing network configuration. If a request fails or exceeds 60 seconds, the script waits 15 seconds and tries once more. Results and brief CLI output are written to `logs/activator.log`.
 
 The [`--ephemeral` option](https://learn.chatgpt.com/docs/developer-commands?surface=cli) prevents Codex CLI from persisting session rollout files for these runs.
+The model and reasoning effort are set on this command only; they do not change your global Codex settings. A shorter prompt does not remove the CLI's fixed request context, so it does not guarantee a proportional reduction in usage.
+
+To send one request manually without running the scheduled task, use:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\test-activation.ps1
+```
+
+This sends one real request and does not retry.
 
 ## Check the task
 
@@ -87,6 +94,7 @@ Uninstallation removes the scheduled task and the generated `config.json`, `run-
 | File | Purpose |
 | --- | --- |
 | `activate.ps1` | Runs the scheduled Codex request and writes the log. |
+| `test-activation.ps1` | Sends one manual request for a quick check. |
 | `setup.ps1` | Installs or removes the scheduled task. |
 | `install.cmd`, `uninstall.cmd` | Windows entry points for setup. |
 | `CHANGELOG.md` | Release history in English and Chinese. |

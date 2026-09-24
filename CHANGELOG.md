@@ -1,5 +1,13 @@
 # Changelog / 更新日志
 
+## v0.1.0 — 2026-09-24
+
+- Use `gpt-6-luna` with `low` reasoning effort for scheduled requests.
+- Replace the timestamped connectivity prompt with `Ping. Reply PONG.`
+- Add `test-activation.ps1` for one manual request without retries.
+- 定时请求指定 `gpt-6-luna` 和 `low` 思考强度，并改用极简呼叫消息。
+- 增加 `test-activation.ps1`，用于手动发送一次请求，不执行重试。
+
 ## v0.1.0 — 2026-09-23
 
 ### English

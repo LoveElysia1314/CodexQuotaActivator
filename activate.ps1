@@ -223,6 +223,10 @@ function Invoke-CodexAttempt {
         "exec",
         "--ephemeral",
         "--skip-git-repo-check",
+        "--model",
+        "gpt-6-luna",
+        "--config",
+        "model_reasoning_effort=low",
         "--color",
         "never",
         $Prompt
@@ -350,15 +354,7 @@ try {
         exit 2
     }
 
-    # The prompt is generated from UTF-8 Base64 to avoid PowerShell 5.1 source-file
-    # encoding issues on systems where scripts are saved without a UTF-8 BOM.
-    $templateBase64 = "VGhpcyBjb252ZXJzYXRpb24gaXMgb25seSBmb3IgdGVzdGluZyBDb2RleCBDTEkgbmV0d29yayBjb25uZWN0aXZpdHkgYW5kIHRoZSBzY2hlZHVsZWQgYWN0aXZhdGlvbiBzY3JpcHQgZXhlY3V0aW9uIHBhdGguCkN1cnJlbnQgdGltZToge1RJTUV9ClBsZWFzZSByZXBseSBvbmx5IHdpdGggIlJlY2VpdmVkLiI="
-    $template = [System.Text.Encoding]::UTF8.GetString(
-        [Convert]::FromBase64String($templateBase64)
-    )
-
-    $timestamp = [DateTimeOffset]::Now.ToString("yyyy-MM-ddTHH:mm:sszzz")
-    $prompt = $template.Replace("{TIME}", $timestamp)
+    $prompt = "Ping. Reply PONG."
 
     for ($attempt = 1; $attempt -le $MaxAttempts; $attempt++) {
         Write-Log "INFO" "Starting Codex attempt $attempt/$MaxAttempts using an ephemeral session."
