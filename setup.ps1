@@ -198,7 +198,7 @@ function Install-CodexActivator {
     @{
         codex_path = $codexPath
         installed_at = [DateTimeOffset]::Now.ToString("o")
-        schedule = "Daily at 05:00, 10:15, 15:30, and 20:45 local time"
+        schedule = "Daily at 05:30, 10:35, 15:40, and 20:45 local time"
     } | ConvertTo-Json | Set-Content -LiteralPath $ConfigTarget -Encoding UTF8
 
     # WScript launches PowerShell with window style 0, so scheduled runs are fully hidden.
@@ -216,7 +216,7 @@ shell.Run cmd, 0, True
     $taskCommand = "`"$wscript`" //B //NoLogo `"$LauncherTarget`""
     Write-Host ""
     Write-Host "Registering one scheduled task with four daily triggers:"
-    Write-Host "  05:00 / 10:15 / 15:30 / 20:45 (local time)"
+    Write-Host "  05:30 / 10:35 / 15:40 / 20:45 (local time)"
     Write-Host "  Runs hidden via wscript.exe -> PowerShell -WindowStyle Hidden"
     Write-Host "  Script location: $LauncherTarget"
 
@@ -227,7 +227,7 @@ shell.Run cmd, 0, True
     $userSid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
     $escapedCommand = [System.Security.SecurityElement]::Escape($wscript)
     $escapedLauncher = [System.Security.SecurityElement]::Escape($LauncherTarget)
-    $triggers = @("05:00:00", "10:15:00", "15:30:00", "20:45:00") | ForEach-Object {
+    $triggers = @("05:30:00", "10:35:00", "15:40:00", "20:45:00") | ForEach-Object {
         @"
     <CalendarTrigger>
       <StartBoundary>${today}T$_</StartBoundary>

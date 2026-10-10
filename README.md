@@ -43,7 +43,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1 -Mode Instal
 
 ## Schedule and behavior
 
-The default schedule runs at **05:00, 10:15, 15:30, and 20:45** local time. These are four daily triggers registered under one Windows task; the times do not need to have equal intervals.
+The default schedule runs at **05:30, 10:35, 15:40, and 20:45** local time. These are four daily triggers registered under one Windows task; the times do not need to have equal intervals.
 
 At each run, the script sends this prompt:
 
