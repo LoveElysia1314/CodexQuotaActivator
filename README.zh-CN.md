@@ -2,7 +2,7 @@
 
 简体中文 | [English](README.md)
 
-这是一个 Windows 计划任务项目，每隔六小时通过 Codex CLI 发送一条简短请求。每次运行使用 `codex exec --ephemeral`，指定 `gpt-6-luna` 和 `low` 思考强度；CLI 不会为该请求保存会话记录文件。
+这是一个 Windows 计划任务项目，每天四次通过 Codex CLI 发送一条简短请求。每次运行使用 `codex exec --ephemeral`，指定 `gpt-6-luna` 和 `low` 思考强度；CLI 不会为该请求保存会话记录文件。
 
 计划任务会使用已登录的 Codex CLI 发起真实请求。**定时发送请求不保证开启、重置或延长额度窗口。**额度规则由 OpenAI 决定。
 
@@ -43,7 +43,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1 -Mode Instal
 
 ## 执行时间与行为
 
-默认从本地时间 05:30 开始，每六小时执行一次，即 **05:30、11:30、17:30、23:30**。Windows 中只注册一个任务。
+默认在本地时间 **05:00、10:15、15:30、20:45** 执行。Windows 中只注册一个任务，但该任务包含四个每日触发器，因此时间点不要求等间隔。
 
 每次运行时，脚本发送以下消息：
 
@@ -75,9 +75,9 @@ schtasks /Query /TN "Codex Quota Activator" /V /FO LIST
 
 运行后查看项目文件夹中的 `logs/activator.log`。失败会写入日志，下一次计划运行照常进行。日志可能包含 CLI 输出和本机路径，请将其作为本地诊断文件保管。
 
-## 修改开始时间
+## 修改触发时间
 
-修改 `setup.ps1` 中 `Install-CodexActivator` 函数的 `/ST 05:30`，然后再次运行 `install.cmd` 更新任务。`/SC HOURLY /MO 6` 设置决定六小时间隔。
+修改 `setup.ps1` 中 `Install-CodexActivator` 函数 `$triggers` 列表中的四个时间，然后再次运行 `install.cmd` 更新任务。
 
 ## 卸载
 

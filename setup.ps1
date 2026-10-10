@@ -198,7 +198,7 @@ function Install-CodexActivator {
     @{
         codex_path = $codexPath
         installed_at = [DateTimeOffset]::Now.ToString("o")
-        schedule = "Every 6 hours starting at 05:30 local time"
+        schedule = "Daily at 05:00, 10:15, 15:30, and 20:45 local time"
     } | ConvertTo-Json | Set-Content -LiteralPath $ConfigTarget -Encoding UTF8
 
     # WScript launches PowerShell with window style 0, so scheduled runs are fully hidden.
@@ -215,25 +215,76 @@ shell.Run cmd, 0, True
     $wscript = Join-Path $env:SystemRoot "System32\wscript.exe"
     $taskCommand = "`"$wscript`" //B //NoLogo `"$LauncherTarget`""
     Write-Host ""
-    Write-Host "Registering one scheduled task:"
-    Write-Host "  05:30 / 11:30 / 17:30 / 23:30 (every 6 hours)"
+    Write-Host "Registering one scheduled task with four daily triggers:"
+    Write-Host "  05:00 / 10:15 / 15:30 / 20:45 (local time)"
     Write-Host "  Runs hidden via wscript.exe -> PowerShell -WindowStyle Hidden"
     Write-Host "  Script location: $LauncherTarget"
 
-    # No /RU or /RP is specified: schtasks uses the current user context
-    # without asking the installer to store an account password.
-    # The action itself is wscript.exe in hidden mode.
-    & schtasks.exe /Create `
-        /TN $TaskName `
-        /TR $taskCommand `
-        /SC HOURLY `
-        /MO 6 `
-        /ST 05:30 `
-        /RL LIMITED `
-        /F | Out-Null
+    # A single schtasks /Create command cannot add multiple unrelated daily
+    # triggers, so register the task from XML instead.
+    $taskXmlPath = Join-Path $env:TEMP ("CodexQuotaActivator-{0}.xml" -f [Guid]::NewGuid())
+    $today = (Get-Date).Date.ToString("yyyy-MM-dd")
+    $userSid = [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+    $escapedCommand = [System.Security.SecurityElement]::Escape($wscript)
+    $escapedLauncher = [System.Security.SecurityElement]::Escape($LauncherTarget)
+    $triggers = @("05:00:00", "10:15:00", "15:30:00", "20:45:00") | ForEach-Object {
+        @"
+    <CalendarTrigger>
+      <StartBoundary>${today}T$_</StartBoundary>
+      <Enabled>true</Enabled>
+      <ScheduleByDay>
+        <DaysInterval>1</DaysInterval>
+      </ScheduleByDay>
+    </CalendarTrigger>
+"@
+    }
+    $taskXml = @"
+<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <RegistrationInfo>
+    <Description>Runs Codex Quota Activator at four daily local times.</Description>
+  </RegistrationInfo>
+  <Triggers>
+$($triggers -join "`r`n")
+  </Triggers>
+  <Principals>
+    <Principal id="Author">
+      <UserId>$userSid</UserId>
+      <LogonType>InteractiveToken</LogonType>
+      <RunLevel>LeastPrivilege</RunLevel>
+    </Principal>
+  </Principals>
+  <Settings>
+    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+    <DisallowStartIfOnBatteries>true</DisallowStartIfOnBatteries>
+    <StopIfGoingOnBatteries>true</StopIfGoingOnBatteries>
+    <StartWhenAvailable>true</StartWhenAvailable>
+    <AllowHardTerminate>true</AllowHardTerminate>
+    <ExecutionTimeLimit>PT72H</ExecutionTimeLimit>
+    <Hidden>false</Hidden>
+  </Settings>
+  <Actions Context="Author">
+    <Exec>
+      <Command>$escapedCommand</Command>
+      <Arguments>//B //NoLogo $escapedLauncher</Arguments>
+    </Exec>
+  </Actions>
+</Task>
+"@
 
-    if ($LASTEXITCODE -ne 0) {
-        throw "schtasks.exe failed to register the scheduled task (exit code $LASTEXITCODE)."
+    try {
+        [System.IO.File]::WriteAllText(
+            $taskXmlPath,
+            $taskXml,
+            (New-Object System.Text.UnicodeEncoding($false, $true))
+        )
+        & schtasks.exe /Create /TN $TaskName /XML $taskXmlPath /F | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            throw "schtasks.exe failed to register the scheduled task (exit code $LASTEXITCODE)."
+        }
+    }
+    finally {
+        Remove-Item -LiteralPath $taskXmlPath -Force -ErrorAction SilentlyContinue
     }
 
     & schtasks.exe /Query /TN $TaskName *> $null

@@ -2,7 +2,7 @@
 
 [简体中文](README.zh-CN.md) | English
 
-A Windows scheduled task that sends a short Codex CLI request every six hours. Each run uses `codex exec --ephemeral` with `gpt-6-luna` at `low` reasoning effort, so the CLI does not persist a session rollout file for that request.
+A Windows scheduled task that sends a short Codex CLI request four times per day. Each run uses `codex exec --ephemeral` with `gpt-6-luna` at `low` reasoning effort, so the CLI does not persist a session rollout file for that request.
 
 The task sends real requests through your signed-in Codex CLI. **A scheduled request does not guarantee that a usage limit window will start, reset, or extend.** OpenAI controls how usage limits work.
 
@@ -43,7 +43,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1 -Mode Instal
 
 ## Schedule and behavior
 
-The default schedule starts at 05:30 local time and repeats every six hours: **05:30, 11:30, 17:30, and 23:30**. It is registered as one Windows task.
+The default schedule runs at **05:00, 10:15, 15:30, and 20:45** local time. These are four daily triggers registered under one Windows task; the times do not need to have equal intervals.
 
 At each run, the script sends this prompt:
 
@@ -75,9 +75,9 @@ schtasks /Query /TN "Codex Quota Activator" /V /FO LIST
 
 After the run, read `logs/activator.log` in the project folder. A failed run is logged and the next scheduled run proceeds normally. The log can contain CLI output and local paths, so treat it as a local diagnostic file.
 
-## Change the start time
+## Change the trigger times
 
-Edit `/ST 05:30` in `Install-CodexActivator` in `setup.ps1`, then run `install.cmd` again to update the task. The `/SC HOURLY /MO 6` settings keep the six-hour interval.
+Edit the four time strings in the `$triggers` list in `Install-CodexActivator` in `setup.ps1`, then run `install.cmd` again to update the task.
 
 ## Uninstall
 

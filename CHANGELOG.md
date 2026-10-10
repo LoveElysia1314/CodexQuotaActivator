@@ -1,5 +1,10 @@
 # Changelog / 更新日志
 
+## v0.2.0 — 2026-10-10
+
+- Replace the six-hour interval with four daily triggers at 05:00, 10:15, 15:30, and 20:45.
+- 将单个计划任务改为包含四个每日触发器：05:00、10:15、15:30、20:45。
+
 ## v0.1.0 — 2026-09-24
 
 - Use `gpt-6-luna` with `low` reasoning effort for scheduled requests.
